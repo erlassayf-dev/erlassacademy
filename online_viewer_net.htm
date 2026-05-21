@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Edukasi: Pasangkan Alat & Fungsi (3 Level)</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --success-color: #2ec4b6;
+            --accent-color: #ff9f1c;
+            --bg-color: #f7fafc;
+            --card-bg: #ffffff;
+            --text-main: #2d3748;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            user-select: none;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: #1a365d;
+            margin-bottom: 8px;
+        }
+
+        .instruksi {
+            font-size: 1rem;
+            color: #4a5568;
+            background: #fff;
+            padding: 10px 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: inline-block;
+        }
+
+        /* Navigasi Level */
+        .level-container {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+            justify-content: center;
+        }
+
+        .level-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            background: #e2e8f0;
+            color: #718096;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .level-badge.active {
+            background: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 6px rgba(74, 144, 226, 0.3);
+        }
+
+        .level-badge.completed {
+            background: var(--success-color);
+            color: white;
+        }
+
+        /* Area Game Utama */
+        .game-wrapper {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 900px;
+            gap: 30px;
+            margin-top: 10px;
+            position: relative;
+        }
+
+        .column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-height: 350px;
+        }
+
+        .column-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            text-align: center;
+            padding: 12px;
+            background-color: #edf2f7;
+            border-radius: 8px;
+            color: #4a5568;
+            border-bottom: 3px solid #cbd5e1;
+        }
+
+        /* Skenario Drag Tradisional HTML5 yang Menempel Sempurna ke Mouse */
+        .card {
+            background-color: var(--card-bg);
+            border: 2px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 14px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: grab;
+            box-shadow: 0 3px 5px rgba(0,0,0,0.05);
+            transition: background-color 0.2s, border-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            min-height: 54px;
+        }
+
+        .card:active {
+            cursor: grabbing;
+        }
+
+        .card.dragging {
+            opacity: 0.4;
+            border: 2px dashed var(--primary-color);
+            background-color: #ebf8ff;
+        }
+
+        .dropzone {
+            background-color: #ffffff;
+            border: 2px dashed #cbd5e1;
+            border-radius: 10px;
+            min-height: 64px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            font-size: 0.95rem;
+            color: #4a5568;
+            text-align: center;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .dropzone.hovered {
+            background-color: #ebf8ff;
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            transform: scale(1.02);
+        }
+
+        .dropzone.correct {
+            background-color: #e6fffa;
+            border-color: var(--success-color);
+            color: #006d5b;
+            border-style: solid;
+            font-weight: 500;
+            box-shadow: inset 0 0 8px rgba(46, 196, 182, 0.15);
+        }
+
+        .dropzone-title {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #a0aec0;
+            margin-bottom: 4px;
+            font-weight: bold;
+        }
+
+        .dropzone.correct .dropzone-title {
+            color: var(--success-color);
+        }
+
+        /* Bagian Bawah: Tombol & Skor */
+        .footer-tools {
+            margin-top: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            background: white;
+            padding: 10px 25px;
+            border-radius: 30px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .stat-item span {
+            color: var(--primary-color);
+        }
+
+        /* Overlay Papan Kelulusan Level / Game */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(26, 32, 44, 0.8);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal {
+            background: white;
+            padding: 35px;
+            border-radius: 16px;
+            text-align: center;
+            max-width: 450px;
+            width: 100%;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal h2 {
+            font-size: 1.8rem;
+            color: #2b6cb0;
+            margin-bottom: 10px;
+        }
+
+        .modal p {
+            font-size: 1.1rem;
+            color: #4a5568;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(74, 144, 226, 0.3);
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background-color: #357abd;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+            box-shadow: 0 4px 6px rgba(46, 196, 182, 0.3);
+        }
+
+        .btn-success:hover {
+            background-color: #25a195;
+        }
+
+        /* Responsif Mobile */
+        @media (max-width: 768px) {
+            .game-wrapper {
+                flex-direction: column;
+                gap: 20px;
+            }
+            .column {
+                min-height: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🎮 Pasangkan Alat Teknologi & Fungsinya</h1>
+        <p class="instruksi">Tarik kotak <b>Nama Alat</b> di kiri, lalu tempelkan ke dalam kotak <b>Fungsi</b> yang tepat di kanan.</p>
+        
+        <div class="level-container">
+            <div class="level-badge active" id="badge-1">Level 1: Alat Rumah (Bag. 1)</div>
+            <div class="level-badge" id="badge-2">Level 2: Alat Rumah (Bag. 2)</div>
+            <div class="level-badge" id="badge-3">Level 3: Elektronik Kerja</div>
+        </div>
+    </header>
+
+    <div class="game-wrapper">
+        <div class="column">
+            <div class="column-title">Nama Alat</div>
+            <div id="cards-container"></div>
+        </div>
+
+        <div class="column">
+            <div class="column-title">Fungsi / Kegunaan</div>
+            <div id="dropzones-container"></div>
+        </div>
+    </div>
+
+    <div class="footer-tools">
+        <div class="stats-bar">
+            <div class="stat-item">Level: <span id="txt-current-level">1</span>/3</div>
+            <div class="stat-item">Skor Level: <span id="txt-score">0</span>/<span id="txt-max-score">3</span></div>
+        </div>
+        <button class="btn" style="background-color: #718096;" onclick="restartCurrentLevel()">🔄 Ulangi Level Ini</button>
+    </div>
+
+    <div class="overlay" id="level-modal">
+        <div class="modal">
+            <h2 id="modal-title">🎉 Luar Biasa!</h2>
+            <p id="modal-desc">Kamu berhasil menyelesaikan level ini dengan sempurna.</p>
+            <button class="btn btn-success" id="modal-btn" onclick="nextAction()">Lanjutkan ➔</button>
+        </div>
+    </div>
+
+    <script>
+        // Data Game Terbagi Menjadi 3 Level Terpisah (Masing-masing 3 tantangan agar seimbang & fokus)
+        const levelsData = {
+            1: [
+                { id: "l1_1", name: "Televisi (TV)", fungsi: "Menonton acara kesukaan & belajar tayangan edukasi" },
+                { id: "l1_2", name: "Kipas Angin", fungsi: "Menyejukkan ruangan saat cuaca terasa panas" },
+                { id: "l1_3", name: "Lampu", fungsi: "Menerangi ruangan di rumah agar terlihat terang" }
+            ],
+            2: [
+                { id: "l2_1", name: "Setrika", fungsi: "Merapikan pakaian yang kusut setelah dicuci" },
+                { id: "l2_2", name: "Kulkas", fungsi: "Menyimpan bahan makanan agar awet dan tetap segar" },
+                { id: "l2_3", name: "Mesin Cuci", fungsi: "Mencuci pakaian kotor dengan praktis dan cepat" }
+            ],
+            3: [
+                { id: "l3_1", name: "Komputer / Laptop", fungsi: "Mengerjakan tugas sekolah, mengetik dokumen, dan bekerja" },
+                { id: "l3_2", name: "Printer", fungsi: "Mencetak tulisan atau gambar dari komputer ke kertas" },
+                { id: "l3_3", name: "Blender", fungsi: "Menghaluskan buah, sayur, atau bumbu dapur dengan cepat" }
+            ]
+        };
+
+        let currentLevel = 1;
+        let score = 0;
+        let maxScore = 3;
+        let draggedCard = null;
+
+        // ----------------------------------------------------
+        // SISTEM AUDIO (Murni Web Audio API Tanpa File Eksternal)
+        // ----------------------------------------------------
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            const now = audioCtx.currentTime;
+
+            if (type === 'click') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.exponentialRampToValueAtTime(600, now + 0.08);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.08);
+                osc.start(now);
+                osc.stop(now + 0.08);
+            } 
+            else if (type === 'correct') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(523.25, now);
+                osc.frequency.setValueAtTime(659.25, now + 0.1);
+                osc.frequency.setValueAtTime(783.99, now + 0.2);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.35);
+                osc.start(now);
+                osc.stop(now + 0.35);
+            } 
+            else if (type === 'wrong') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(180, now);
+                osc.frequency.linearRampToValueAtTime(110, now + 0.25);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.25);
+                osc.start(now);
+                osc.stop(now + 0.25);
+            } 
+            else if (type === 'victory') {
+                osc.type = 'sine';
+                const notes = [261.63, 329.63, 392.00, 523.25, 659.25, 783.99, 1046.50];
+                notes.forEach((freq, idx) => {
+                    const noteOsc = audioCtx.createOscillator();
+                    const noteGain = audioCtx.createGain();
+                    noteOsc.type = 'triangle';
+                    noteOsc.frequency.setValueAtTime(freq, now + (idx * 0.08));
+                    noteGain.gain.setValueAtTime(0.15, now + (idx * 0.08));
+                    noteGain.gain.linearRampToValueAtTime(0.01, now + (idx * 0.08) + 0.3);
+                    noteOsc.connect(noteGain);
+                    noteGain.connect(audioCtx.destination);
+                    noteOsc.start(now + (idx * 0.08));
+                    noteOsc.stop(now + (idx * 0.08) + 0.3);
+                });
+            }
+        }
+
+        // ----------------------------------------------------
+        // MEKANISME GAME UTAMA
+        // ----------------------------------------------------
+        function loadLevel(levelNum) {
+            currentLevel = levelNum;
+            score = 0;
+            
+            document.getElementById('txt-current-level').innerText = currentLevel;
+            document.getElementById('txt-score').innerText = score;
+            
+            for(let i = 1; i <= 3; i++) {
+                const badge = document.getElementById(`badge-${i}`);
+                badge.className = 'level-badge';
+                if(i < currentLevel) badge.classList.add('completed');
+                if(i === currentLevel) badge.classList.add('active');
+            }
+
+            const cardsContainer = document.getElementById('cards-container');
+            const dropzonesContainer = document.getElementById('dropzones-container');
+            
+            cardsContainer.innerHTML = '';
+            dropzonesContainer.innerHTML = '';
+
+            const currentData = levelsData[currentLevel];
+            maxScore = currentData.length;
+            document.getElementById('txt-max-score').innerText = maxScore;
+
+            const shuffledCards = [...currentData].sort(() => Math.random() - 0.5);
+            const shuffledFungsi = [...currentData].sort(() => Math.random() - 0.5);
+
+            shuffledCards.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.id = `card-${item.id}`;
+                card.innerText = item.name;
+                card.setAttribute('draggable', 'true');
+
+                card.addEventListener('dragstart', function(e) {
+                    draggedCard = this;
+                    this.classList.add('dragging');
+                    playSound('click');
+                    e.dataTransfer.setData('text/plain', this.id);
+                });
+
+                card.addEventListener('dragend', function() {
+                    this.classList.remove('dragging');
+                    draggedCard = null;
+                });
+
+                cardsContainer.appendChild(card);
+            });
+
+            shuffledFungsi.forEach(item => {
+                const zone = document.createElement('div');
+                zone.className = 'dropzone';
+                zone.dataset.matchId = item.id;
+                zone.innerHTML = `<span class="dropzone-title">Fungsi</span><div>${item.fungsi}</div>`;
+
+                zone.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                });
+
+                zone.addEventListener('dragenter', function(e) {
+                    e.preventDefault();
+                    if(!this.classList.contains('correct')) {
+                        this.classList.add('hovered');
+                    }
+                });
+
+                zone.addEventListener('dragleave', function() {
+                    this.classList.remove('hovered');
+                });
+
+                zone.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    this.classList.remove('hovered');
+                    
+                    if (!draggedCard || this.classList.contains('correct')) return;
+
+                    const cardId = draggedCard.id.replace('card-', '');
+                    const targetId = this.dataset.matchId;
+
+                    if (cardId === targetId) {
+                        this.classList.add('correct');
+                        this.innerHTML = `<span class="dropzone-title" style="color:#2ec4b6;">✓ ${draggedCard.innerText}</span><div style="font-size:0.9rem; color:#1a202c;">${item.fungsi}</div>`;
+                        
+                        draggedCard.remove();
+                        playSound('correct');
+                        
+                        score++;
+                        document.getElementById('txt-score').innerText = score;
+
+                        if (score === maxScore) {
+                            setTimeout(checkLevelCompletion, 500);
+                        }
+                    } else {
+                        playSound('wrong');
+                        this.style.borderColor = '#f56565';
+                        this.style.backgroundColor = '#fff5f5';
+                        setTimeout(() => {
+                            if(!this.classList.contains('correct')) {
+                                this.style.borderColor = '#cbd5e1';
+                                this.style.backgroundColor = '#ffffff';
+                            }
+                        }, 500);
+                    }
+                });
+
+                dropzonesContainer.appendChild(zone);
+            });
+        }
+
+        function checkLevelCompletion() {
+            const modal = document.getElementById('level-modal');
+            const title = document.getElementById('modal-title');
+            const desc = document.getElementById('modal-desc');
+            const btn = document.getElementById('modal-btn');
+
+            playSound('victory');
+
+            if (currentLevel < 3) {
+                title.innerText = `🎉 Selamat! Level ${currentLevel} Selesai`;
+                desc.innerText = `Hebat sekali! Semua pasangan alat di level ini terpasang dengan benar. Siap naik ke level berikutnya?`;
+                btn.innerText = "Lanjut ke Level Berikutnya ➔";
+            } else {
+                title.innerText = "🏆 Selamat! Kamu Juara Game";
+                desc.innerText = "Luar biasa! Kamu berhasil menuntaskan semua 3 level tantangan dan memahami semua fungsi alat teknologi dengan sempurna!";
+                btn.innerText = "Main Lagi Dari Awal ↺";
+            }
+            modal.style.display = 'flex';
+        }
+
+        function nextAction() {
+            document.getElementById('level-modal').style.display = 'none';
+            if (currentLevel < 3) {
+                loadLevel(currentLevel + 1);
+            } else {
+                loadLevel(1);
+            }
+        }
+
+        function restartCurrentLevel() {
+            loadLevel(currentLevel);
+        }
+
+        window.onload = function() {
+            loadLevel(1);
+        };
+    </script>
+</body>
+</html>
